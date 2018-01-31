@@ -2,7 +2,7 @@ package main
 
 import (
 	//"fmt"
-	"github.com/haoyuxy/gotest/filter"
+	"github.com/haoyuxy/elk-kafka/filter"
 )
 func main() {
 	
