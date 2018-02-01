@@ -41,8 +41,11 @@ func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, Us
 
 func (r *Rule) Reg(log Log) bool {
 	b, _ := regexp.MatchString(r.LogPattern, log.Message)
+	if !b {
+		return false
+	}
 	f, _ := regexp.MatchString(r.FilePattern, log.Source)
-	if b && f {
+	if  f {
 		//fmt.Println(log.Message)
 		return true
 	}else{
@@ -51,11 +54,20 @@ func (r *Rule) Reg(log Log) bool {
 }
 
 func (r *Rule) CheckTime(t int) bool {
-	if t <= r.EndTime && t >= r.StartTime {
-		return true
+	if r.EndTime > r.StartTime {
+		if t <= r.EndTime && t >= r.StartTime {
+			return true
+		}else {
+			return false
+		}
 	}else {
-		return false
+		if t >= r.EndTime && t >= r.StartTime {
+			return true
+		}else {
+			return false
+		}
 	}
+	
 }
 
 func (r *Rule) CheckCount(c int) bool {

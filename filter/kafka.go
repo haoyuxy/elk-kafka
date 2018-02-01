@@ -11,7 +11,7 @@ import (
 	cluster "github.com/bsm/sarama-cluster"
 )
 
-func KafkaOut(topic ,group ,ip_port string) {
+func KafkaOut(MaxCount int, topic ,group ,ip_port string) {
 	
 	s1 := make([]int64, 0, 1000)
 	data := make(map[string][]int64)
@@ -67,17 +67,26 @@ func KafkaOut(topic ,group ,ip_port string) {
 			//	fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 			//	fmt.Println(msg.Value)
 				log := JsontoStr(msg.Value)
-				for k,v := range rulemap {
+				go func() {
+					for k,v := range rulemap {
 					if v.Reg(log) {
+						go func() {
 						if v.CheckTime(time.Now().Hour()) {
 							data[k] = append(data[k],time.Now().Unix() + v.Expired)
 							data[k] = Expire(data[k])
-							if v.CheckCount(len(data[k])) {
+							ncount := len(data[k])
+							if v.CheckCount(ncount) {
 								fmt.Println("alarm",len(data[k]),k,data[k])
+								
+							}
+							if ncount > MaxCount {
+								data[k] = data[k][:0]
 							} 
 						}
+						}()
 					}
 				}
+				}()	
 		
 			//	consumer.MarkOffset(msg, "")	// mark message as processed
 				consumer.MarkOffset(msg, "")	// mark message as processed
