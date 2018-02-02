@@ -10,7 +10,8 @@ const (
 )
 func main() {
 	
-	c := filter.Config()
-	filter.KafkaOut(MaxCount, c.Topic, c.Group, c.Kafka)
+	cfg := filter.Config()
+	//filter.KafkaOut(MaxCount, c.Topic, c.Group, c.Kafka, c.Apiurl)
+	filter.KafkaOut(MaxCount, &cfg)
 	
 }

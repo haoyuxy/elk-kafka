@@ -6,14 +6,21 @@ import (
 	goconf "github.com/akrennmair/goconf"
 	"os"
 	"regexp"
+	"net/http"
+    "net/url"
+     "log"
+     "encoding/json"
+      "io/ioutil"
 )
 
 type Cfg struct {
 	Kafka      string
 	Group      string
 	Topic      string
-	Rule_url   string
-	User_media string
+	Apiurl	   string
+	Mailurl		string
+	Wechaturl	string
+	Phone		string
 }
 
 type Rule struct {
@@ -26,25 +33,31 @@ type Rule struct {
 	EndTime     int
 	User        string
 	Rulel       string
+	Callback	string
+	Nextalarmtime int64
 }
 
 
-func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, User string, Rulel string, Expired int64, Count, StartTime, EndTime int) {
+/*
+func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, User string, Rulel string, Callback string, Expired int64,Nextalarmtime int64, Count, StartTime, EndTime int) {
 	r.FilePattern = FilePattern
 	r.LogPattern = LogPattern
 	r.Compare = Compare
 	r.User = User
 	r.Rulel = Rulel
-	r.Expired, r.Count, r.StartTime, r.EndTime = Expired, Count, StartTime, EndTime
+	r.Callback = Callback
+	r.Expired, r.Count, r.StartTime, r.EndTime, r.Nextalarmtime = Expired, Count, StartTime, EndTime, Nextalarmtime
 
 }
+*/
 
-func (r *Rule) Reg(log Log) bool {
-	b, _ := regexp.MatchString(r.LogPattern, log.Message)
-	if !b {
+func (r *Rule) Reg(log *Log) bool {
+	b, _ := regexp.MatchString(r.FilePattern, log.Source)
+	//fmt.Println(log.Source,r.FilePattern,b)
+	if ! b {
 		return false
 	}
-	f, _ := regexp.MatchString(r.FilePattern, log.Source)
+	f, _ := regexp.MatchString(r.LogPattern, log.Message)
 	if  f {
 		//fmt.Println(log.Message)
 		return true
@@ -72,9 +85,8 @@ func (r *Rule) CheckTime(t int) bool {
 
 func (r *Rule) CheckCount(c int) bool {
 	switch r.Compare {
-		   case ">":
+		case ">":
                 return c > r.Count
-	     
         case "<":
                 return c < r.Count
         case ">=":
@@ -85,6 +97,18 @@ func (r *Rule) CheckCount(c int) bool {
 	return false
 }
 
+func (r *Rule) CheckLastTime(last, now int64) bool {
+	if last == 0 || r.Nextalarmtime == 0 {
+		return true
+	} else {
+		if last + r.Nextalarmtime * 60 < now {
+			return true
+		}else {
+			return false
+		}
+	}
+}
+/*
 func Rules() []*Rule {
 	var r1, r2, r3 Rule
 	Ruleslice := make([]*Rule, 0, 300)
@@ -98,6 +122,32 @@ func Rules() []*Rule {
 	//}
 		return Ruleslice 
 }
+*/
+
+func Rules(rule_url string) []*Rule {
+	    u, _ := url.Parse(rule_url)
+        q := u.Query()
+        //q.Set("username", "user")
+        //q.Set("password", "passwd")
+        u.RawQuery = q.Encode()
+        res, err := http.Get(u.String())
+        if err != nil {
+                log.Fatal(err)
+                panic(err)
+        }
+        result, err := ioutil.ReadAll(res.Body)
+        res.Body.Close()
+        if err != nil {
+                log.Fatal(err)
+                panic(err)
+        }
+
+        var r []*Rule
+        json.Unmarshal(result, &r)
+        return r
+}
+
+
 
 func Config() Cfg {
 	var cfgFile string
@@ -139,11 +189,8 @@ func (conf *Cfg) readconf(file string) error {
 	if err != nil {
 		return err
 	}
-	conf.Rule_url, err = c.GetString("default", "rule_url")
-	if err != nil {
-		return err
-	}
-	conf.User_media, err = c.GetString("default", "user_media")
+
+	conf.Apiurl, err = c.GetString("default", "apiurl")
 	return err
 }
 

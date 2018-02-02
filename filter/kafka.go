@@ -11,21 +11,27 @@ import (
 	cluster "github.com/bsm/sarama-cluster"
 )
 
-func KafkaOut(MaxCount int, topic ,group ,ip_port string) {
+//func KafkaOut(MaxCount int, topic ,group ,ip_port, apiurl string) {
+func KafkaOut(MaxCount int, cfg *Cfg) {
 	
 	s1 := make([]int64, 0, 1000)
-	data := make(map[string][]int64)
+
+	//s2 := make([]int64, 0, 1)
+	expiredtime := make(map[string][]int64)
+	lastalarmtime := make(map[string]int64)
 	rulemap := make(map[string]*Rule)
 	
-	Ruleslice := Rules()
+	//Ruleslice := Rules()
+	Ruleslice := Rules(cfg.Apiurl + "elk/")
+	fmt.Println(Ruleslice[0])
 	for i, r := range Ruleslice {
 		//*r.Rulel := make([]int64, 0, 1000)
 		k := "als" + strconv.Itoa(i)
-		data[k] = s1
+		expiredtime[k] = s1
+		lastalarmtime[k] = 0
 		rulemap[k] = r
 	
 	}
-	
 	
 	
 	config := cluster.NewConfig()
@@ -33,9 +39,9 @@ func KafkaOut(MaxCount int, topic ,group ,ip_port string) {
 	config.Group.Return.Notifications = true
 
 	// init consumer
-	brokers := []string{ip_port}
-	topics := []string{topic}
-	consumer, err := cluster.NewConsumer(brokers, group, topics, config)
+	brokers := []string{cfg.Kafka}
+	topics := []string{cfg.Topic}
+	consumer, err := cluster.NewConsumer(brokers, cfg.Group, topics, config)
 	if err != nil {
 		panic(err)
 	}
@@ -65,25 +71,33 @@ func KafkaOut(MaxCount int, topic ,group ,ip_port string) {
 		case msg, ok := <-consumer.Messages():
 			if ok {
 			//	fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
-			//	fmt.Println(msg.Value)
+				//fmt.Println(string(msg.Value))
 				log := JsontoStr(msg.Value)
 				go func() {
 					for k,v := range rulemap {
-					if v.Reg(log) {
-						go func() {
+					if v.Reg(&log) {
+						//fmt.Println(string(msg.Value))
+						//fmt.Println(v.LogPattern,v.FilePattern)
+					//	go func() {  这里加变量内存会错乱。。。
 						if v.CheckTime(time.Now().Hour()) {
-							data[k] = append(data[k],time.Now().Unix() + v.Expired)
-							data[k] = Expire(data[k])
-							ncount := len(data[k])
-							if v.CheckCount(ncount) {
-								fmt.Println("alarm",len(data[k]),k,data[k])
+							//fmt.Println(k)
+							nowtime := time.Now().Unix()
+							expiredtime[k] = append(expiredtime[k],nowtime + v.Expired)
+							expiredtime[k] = Expire(expiredtime[k])
+							ncount := len(expiredtime[k])
+							if v.CheckCount(ncount) && v.CheckLastTime(lastalarmtime[k],nowtime) {
+								lastalarmtime[k] = nowtime
+								
+								fmt.Println("alarm",len(expiredtime[k]),k,expiredtime[k],v.FilePattern)
+								fmt.Println(len(expiredtime["als0"]),len(expiredtime["als1"]))
+								
 								
 							}
 							if ncount > MaxCount {
-								data[k] = data[k][:0]
+								expiredtime[k] = expiredtime[k][:0]
 							} 
 						}
-						}()
+					//	}()
 					}
 				}
 				}()	
@@ -91,7 +105,7 @@ func KafkaOut(MaxCount int, topic ,group ,ip_port string) {
 			//	consumer.MarkOffset(msg, "")	// mark message as processed
 				consumer.MarkOffset(msg, "")	// mark message as processed
 				time.Sleep(1e9)
-                                fmt.Println("------------------------------")
+                               // fmt.Println("------------------------------")
 			}
 		case <-signals:
 			return
