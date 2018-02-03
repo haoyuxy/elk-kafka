@@ -1,42 +1,43 @@
 package filter
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	goconf "github.com/akrennmair/goconf"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
-	"net/http"
-    "net/url"
-     "log"
-     "encoding/json"
-      "io/ioutil"
+
+	goconf "github.com/akrennmair/goconf"
 )
 
 type Cfg struct {
-	Kafka      string
-	Group      string
-	Topic      string
-	Apiurl	   string
-	Mailurl		string
-	Wechaturl	string
-	Phone		string
+	Kafka     string
+	Group     string
+	Topic     string
+	Apiurl    string
+	Mailurl   string
+	Wechaturl string
+	Phone     string
 }
 
 type Rule struct {
-	FilePattern string
-	LogPattern  string
-	Expired     int64
-	Count       int
-	Compare     string
-	StartTime   int
-	EndTime     int
-	User        string
-	Rulel       string
-	Callback	string
+	FilePattern   string
+	LogPattern    string
+	Expired       int64
+	Count         int
+	Compare       string
+	StartTime     int
+	EndTime       int
+	User          string
+	Rulel         string
+	Callback      string
 	Nextalarmtime int64
+	Msg           string
 }
-
 
 /*
 func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, User string, Rulel string, Callback string, Expired int64,Nextalarmtime int64, Count, StartTime, EndTime int) {
@@ -54,14 +55,14 @@ func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, Us
 func (r *Rule) Reg(log *Log) bool {
 	b, _ := regexp.MatchString(r.FilePattern, log.Source)
 	//fmt.Println(log.Source,r.FilePattern,b)
-	if ! b {
+	if !b {
 		return false
 	}
 	f, _ := regexp.MatchString(r.LogPattern, log.Message)
-	if  f {
+	if f {
 		//fmt.Println(log.Message)
 		return true
-	}else{
+	} else {
 		return false
 	}
 }
@@ -70,29 +71,29 @@ func (r *Rule) CheckTime(t int) bool {
 	if r.EndTime > r.StartTime {
 		if t <= r.EndTime && t >= r.StartTime {
 			return true
-		}else {
+		} else {
 			return false
 		}
-	}else {
+	} else {
 		if t >= r.EndTime && t >= r.StartTime {
 			return true
-		}else {
+		} else {
 			return false
 		}
 	}
-	
+
 }
 
 func (r *Rule) CheckCount(c int) bool {
 	switch r.Compare {
-		case ">":
-                return c > r.Count
-        case "<":
-                return c < r.Count
-        case ">=":
-                return c >= r.Count
-        case "<=":
-                return c <= r.Count
+	case ">":
+		return c > r.Count
+	case "<":
+		return c < r.Count
+	case ">=":
+		return c >= r.Count
+	case "<=":
+		return c <= r.Count
 	}
 	return false
 }
@@ -101,13 +102,14 @@ func (r *Rule) CheckLastTime(last, now int64) bool {
 	if last == 0 || r.Nextalarmtime == 0 {
 		return true
 	} else {
-		if last + r.Nextalarmtime * 60 < now {
+		if last+r.Nextalarmtime*60 < now {
 			return true
-		}else {
+		} else {
 			return false
 		}
 	}
 }
+
 /*
 func Rules() []*Rule {
 	var r1, r2, r3 Rule
@@ -120,34 +122,32 @@ func Rules() []*Rule {
 	//for _, r := range Ruleslice {
 	//	fmt.Println(*r)
 	//}
-		return Ruleslice 
+		return Ruleslice
 }
 */
 
 func Rules(rule_url string) []*Rule {
-	    u, _ := url.Parse(rule_url)
-        q := u.Query()
-        //q.Set("username", "user")
-        //q.Set("password", "passwd")
-        u.RawQuery = q.Encode()
-        res, err := http.Get(u.String())
-        if err != nil {
-                log.Fatal(err)
-                panic(err)
-        }
-        result, err := ioutil.ReadAll(res.Body)
-        res.Body.Close()
-        if err != nil {
-                log.Fatal(err)
-                panic(err)
-        }
+	u, _ := url.Parse(rule_url)
+	q := u.Query()
+	//q.Set("username", "user")
+	//q.Set("password", "passwd")
+	u.RawQuery = q.Encode()
+	res, err := http.Get(u.String())
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	result, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
 
-        var r []*Rule
-        json.Unmarshal(result, &r)
-        return r
+	var r []*Rule
+	json.Unmarshal(result, &r)
+	return r
 }
-
-
 
 func Config() Cfg {
 	var cfgFile string
@@ -193,5 +193,3 @@ func (conf *Cfg) readconf(file string) error {
 	conf.Apiurl, err = c.GetString("default", "apiurl")
 	return err
 }
-
-
