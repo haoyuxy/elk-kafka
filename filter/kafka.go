@@ -13,22 +13,29 @@ import (
 
 //func KafkaOut(MaxCount int, topic ,group ,ip_port, apiurl string) {
 func KafkaOut(MaxCount int, cfg *Cfg) {
-
-	s1 := make([]int64, 0, 1000)
-	ApiUrl := cfg.Apiurl
+/*
+	s1 := make([]int64, 0, 1000)	
 	expiredtime := make(map[string][]int64)
 	lastalarmtime := make(map[string]int64)
 	rulemap := make(map[string]*Rule)
-
+*/	
+	ApiUrl := cfg.Apiurl
+	expiredtime := make([][]int64, 0, 2000)
+	lastalarmtime := make([]int64, 0, 1)
+	rulemap := make := make([]*Rule,0,2000)
 	//Ruleslice := Rules()
 	Ruleslice := Rules(Apiurl + "elk/")
 	fmt.Println(Ruleslice[0])
 	for i, r := range Ruleslice {
-		//*r.Rulel := make([]int64, 0, 1000)
+		/*
 		k := "als" + strconv.Itoa(i)
 		expiredtime[k] = s1
 		lastalarmtime[k] = 0
 		rulemap[k] = r
+		*/
+		expiredtime = append(expiredtime,make([]int64, 0, 2000))
+		lastalarmtime = append(lastalarmtime,0)
+		rulemap = append(rulemap,r)
 
 	}
 
@@ -71,12 +78,12 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 				//	fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 				//fmt.Println(string(msg.Value))
 				log := JsontoStr(msg.Value)
-				go func() {
+				go func(log *Log) {
 					for k, v := range rulemap {
 						if v.Reg(&log) {
 							//fmt.Println(string(msg.Value))
 							//fmt.Println(v.LogPattern,v.FilePattern)
-							//	go func() {  这里加变量内存会错乱。。。
+							//	go func() {
 							if v.CheckTime(time.Now().Hour()) {
 								//fmt.Println(k)
 								nowtime := time.Now().Unix()
@@ -86,8 +93,8 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 								if v.CheckCount(ncount) && v.CheckLastTime(lastalarmtime[k], nowtime) {
 									lastalarmtime[k] = nowtime
 
-									fmt.Println("alarm", len(expiredtime[k]), k, expiredtime[k], v.FilePattern)
-									fmt.Println(len(expiredtime["als0"]), len(expiredtime["als1"]))
+									//fmt.Println("alarm", len(expiredtime[k]), k, expiredtime[k], v.FilePattern)
+									//fmt.Println(len(expiredtime["als0"]), len(expiredtime["als1"]))
 									us = v.User
 									userslice := Users(ApiUrl + "users")
 									for _, u := range us {
@@ -111,7 +118,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 							//	}()
 						}
 					}
-				}()
+				}(log)
 
 				//	consumer.MarkOffset(msg, "")	// mark message as processed
 				consumer.MarkOffset(msg, "") // mark message as processed

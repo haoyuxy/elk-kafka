@@ -1,33 +1,34 @@
 package filter
 
 import (
-        "encoding/json"
-       // "fmt"
-        //"regexp"
+	"encoding/json"
+	// "fmt"
+	//"regexp"
 )
 
 type Beat struct {
-        Name     string
-        Hostname string
-        Version  string
+	Name     string
+	Hostname string
+	Version  string
 }
 
 type Log struct {
-        Tiimestamp string
-        Metadata   string
-        Offset     int64
-        Message    string
-        Source     string
-        Prospector string
-        Fields     string
-        Beat       Beat
+	Tiimestamp string
+	Metadata   string
+	Offset     int64
+	Message    string
+	Source     string
+	Prospector string
+	Fields     string
+	Beat       Beat
 }
 
-func JsontoStr(b []byte) Log {
-	var log Log
-	json.Unmarshal(b, &log)
+func JsontoStr(b []byte) *Log {
+	var log *Log
+	json.Unmarshal(b, log)
 	return log
 }
+
 /*
 func LogReg(pattern ,s ,logfilepattern ,logfile,string) (b bool) {
 	b, _ := regexp.MatchString(pattern, s)
@@ -37,6 +38,6 @@ func LogReg(pattern ,s ,logfilepattern ,logfile,string) (b bool) {
 	}else{
 		return false
 	}
-	
+
 }
 */
