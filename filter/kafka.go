@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
+//	"strconv"
 	"time"
+	"strings"
 
 	cluster "github.com/bsm/sarama-cluster"
 )
@@ -22,11 +23,11 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	ApiUrl := cfg.Apiurl
 	expiredtime := make([][]int64, 0, 2000)
 	lastalarmtime := make([]int64, 0, 1)
-	rulemap := make := make([]*Rule,0,2000)
+	rulemap  := make([]*Rule,0,2000)
 	//Ruleslice := Rules()
-	Ruleslice := Rules(Apiurl + "elk/")
-	fmt.Println(Ruleslice[0])
-	for i, r := range Ruleslice {
+	Ruleslice := Rules(ApiUrl + "elk/")
+	fmt.Println(Ruleslice)
+	for _, r := range Ruleslice {
 		/*
 		k := "als" + strconv.Itoa(i)
 		expiredtime[k] = s1
@@ -78,10 +79,11 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 				//	fmt.Fprintf(os.Stdout, "%s/%d/%d\t%s\t%s\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
 				//fmt.Println(string(msg.Value))
 				log := JsontoStr(msg.Value)
+				//fmt.Println(log)
 				go func(log *Log) {
 					for k, v := range rulemap {
-						if v.Reg(&log) {
-							//fmt.Println(string(msg.Value))
+						if v.Reg(log) {
+							//fmt.Println(log)
 							//fmt.Println(v.LogPattern,v.FilePattern)
 							//	go func() {
 							if v.CheckTime(time.Now().Hour()) {
@@ -93,13 +95,18 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 								if v.CheckCount(ncount) && v.CheckLastTime(lastalarmtime[k], nowtime) {
 									lastalarmtime[k] = nowtime
 
-									//fmt.Println("alarm", len(expiredtime[k]), k, expiredtime[k], v.FilePattern)
+									fmt.Println("alarm", len(expiredtime[k]), k, expiredtime[k], v.FilePattern)
 									//fmt.Println(len(expiredtime["als0"]), len(expiredtime["als1"]))
-									us = v.User
+									users := v.User
+									us := strings.Split(users,",")
+									//fmt.Println(us)
 									userslice := Users(ApiUrl + "users")
+									//fmt.Println(us,userslice)
 									for _, u := range us {
 										for _, u2 := range userslice {
-											if u2.Name == u {
+											//fmt.Println(u2.Username)
+											if u2.Username == u {
+												//fmt.Println(u)
 												emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source
 												SendMail(cfg.Mailurl, u2.Email, emsg)
 												Sendwechat(cfg.Wechaturl, u2.Wechat, emsg)
@@ -118,7 +125,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 							//	}()
 						}
 					}
-				}(log)
+				}(&log)
 
 				//	consumer.MarkOffset(msg, "")	// mark message as processed
 				consumer.MarkOffset(msg, "") // mark message as processed

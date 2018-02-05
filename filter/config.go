@@ -189,6 +189,17 @@ func (conf *Cfg) readconf(file string) error {
 	if err != nil {
 		return err
 	}
+	
+	conf.Mailurl, err = c.GetString("default", "mail")
+	if err != nil {
+		return err
+	}
+	
+	conf.Wechaturl, err = c.GetString("default", "wechat")
+	if err != nil {
+		return err
+	}
+	
 
 	conf.Apiurl, err = c.GetString("default", "apiurl")
 	return err

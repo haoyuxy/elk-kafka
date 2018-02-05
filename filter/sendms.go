@@ -1,15 +1,16 @@
 package filter
 
 import (
-	"fmt"
+	//"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"encoding/json"
 )
 
 type User struct {
-	Name   string
+	Username   string
 	Phone  string
 	Wechat string
 	Email  string
@@ -50,7 +51,7 @@ func Sendwechat(chat, user, msg string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(string(result))
+	log.Printf(string(result))
 
 }
 
@@ -69,10 +70,10 @@ func SendMail(emailurl, user, msg string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(string(result))
+	log.Printf(string(result))
 
 }
 
 func Callback(callurl string) {
-	log.Fatal(callurl)
+	log.Printf(callurl)
 }

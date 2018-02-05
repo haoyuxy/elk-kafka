@@ -23,9 +23,9 @@ type Log struct {
 	Beat       Beat
 }
 
-func JsontoStr(b []byte) *Log {
-	var log *Log
-	json.Unmarshal(b, log)
+func JsontoStr(b []byte) Log {
+	var log Log
+	json.Unmarshal(b, &log)
 	return log
 }
 
