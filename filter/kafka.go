@@ -63,6 +63,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 		case msg, ok := <-consumer.Messages():
 			if ok {
 				//fmt.Println(string(msg.Value))
+				fmt.Println(string(msg.Value))
 				log := JsontoStr(msg.Value)
 				go func(log *Log) { //用每条规则检查日志
 					for k, v := range rulemap { 
@@ -80,7 +81,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 									for _, u := range us {
 										for _, u2 := range userslice {
 											if u2.Username == u {    
-												emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source  //告警信息
+												emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source + "\n" + log.Beat.Name //告警信息
 												SendMail(cfg.Mailurl, u2.Email, emsg)  //发送邮件
 												Sendwechat(cfg.Wechaturl, u2.Wechat, emsg)  //发送微信
 												Callback(v.Callback)   //回调函数
