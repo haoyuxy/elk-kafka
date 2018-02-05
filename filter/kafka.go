@@ -14,7 +14,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	
 	ApiUrl := cfg.Apiurl  //获取规则和用户的url
 	expiredtime := make([][]int64, 0, 2000)  //存储匹配到的指标队列
-	lastalarmtime := make([]int64, 0, 1)  //每一条规则的上传告警时间
+	lastalarmtime := make([]int64, 0, 1)  //每一条规则的上次告警时间
 	rulemap  := make([]*Rule,0,2000)  //规则队列
 	//Ruleslice := Rules()
 	Ruleslice := Rules(ApiUrl + "elk/")
