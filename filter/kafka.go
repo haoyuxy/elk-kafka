@@ -129,7 +129,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 
 				//	consumer.MarkOffset(msg, "")	// mark message as processed
 				consumer.MarkOffset(msg, "") // mark message as processed
-				time.Sleep(1e9)
+			//	time.Sleep(1e9)
 				// fmt.Println("------------------------------")
 			}
 		case <-signals:
