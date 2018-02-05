@@ -1,17 +1,19 @@
 package main
 
 import (
-	//"fmt"
+	"runtime"
 	"github.com/haoyuxy/elk-kafka/filter"
 )
 
 const (
-	MaxCount = 1000  //max xxx count
+	MaxCount = 2000  //max xxx count
 )
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 func main() {
 	
 	cfg := filter.Config()
-	//filter.KafkaOut(MaxCount, c.Topic, c.Group, c.Kafka, c.Apiurl)
 	filter.KafkaOut(MaxCount, &cfg)
 	
 }

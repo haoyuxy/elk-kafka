@@ -39,22 +39,10 @@ type Rule struct {
 	Msg           string
 }
 
-/*
-func (r *Rule) SetRule(FilePattern string, LogPattern string, Compare string, User string, Rulel string, Callback string, Expired int64,Nextalarmtime int64, Count, StartTime, EndTime int) {
-	r.FilePattern = FilePattern
-	r.LogPattern = LogPattern
-	r.Compare = Compare
-	r.User = User
-	r.Rulel = Rulel
-	r.Callback = Callback
-	r.Expired, r.Count, r.StartTime, r.EndTime, r.Nextalarmtime = Expired, Count, StartTime, EndTime, Nextalarmtime
 
-}
-*/
 
 func (r *Rule) Reg(log *Log) bool {
 	b, _ := regexp.MatchString(r.FilePattern, log.Source)
-	//fmt.Println(log.Source,r.FilePattern,b)
 	if !b {
 		return false
 	}
@@ -110,21 +98,6 @@ func (r *Rule) CheckLastTime(last, now int64) bool {
 	}
 }
 
-/*
-func Rules() []*Rule {
-	var r1, r2, r3 Rule
-	Ruleslice := make([]*Rule, 0, 300)
-	r1.SetRule("^/log/ruby", "INFO", ">", "hao.yu", "rule1", 6, 5, 10, 20)
-	r2.SetRule("^/log/ruby", "ERROR", ">", "hao.yu", "rule2", 60, 5, 10, 20)
-	r3.SetRule("^/log/ruby", "16", ">", "hao.yu", "rule3", 10, 2, 10, 20)
-	Ruleslice = append(Ruleslice, &r1, &r2, &r3)
-	//fmt.Println(Ruleslice)
-	//for _, r := range Ruleslice {
-	//	fmt.Println(*r)
-	//}
-		return Ruleslice
-}
-*/
 
 func Rules(rule_url string) []*Rule {
 	u, _ := url.Parse(rule_url)
@@ -153,7 +126,6 @@ func Config() Cfg {
 	var cfgFile string
 	flag.StringVar(&cfgFile, "c", "al.cfg", "go alarm config")
 	flag.Parse()
-	//fmt.Println("cfg:", cfgFile)
 
 	if _, err := os.Stat(cfgFile); err != nil {
 		if os.IsNotExist(err) {

@@ -1,7 +1,6 @@
 package filter
 
 import (
-	//"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"

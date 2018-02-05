@@ -2,8 +2,6 @@ package filter
 
 import (
 	"encoding/json"
-	// "fmt"
-	//"regexp"
 )
 
 type Beat struct {
@@ -28,16 +26,3 @@ func JsontoStr(b []byte) Log {
 	json.Unmarshal(b, &log)
 	return log
 }
-
-/*
-func LogReg(pattern ,s ,logfilepattern ,logfile,string) (b bool) {
-	b, _ := regexp.MatchString(pattern, s)
-	f, _ := regexp.MatchString(logfilepattern, logfile)
-	if b && f {
-		return true
-	}else{
-		return false
-	}
-
-}
-*/
