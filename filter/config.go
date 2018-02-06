@@ -99,6 +99,17 @@ func (r *Rule) CheckLastTime(last, now int64) bool {
 }
 
 
+func CheckLastmsg(m map[string]int64,msg string,now int64) bool {
+	var t int64
+	t = m[msg]
+	if t == 0 || t + 30 * 60 <  now  {
+		return true
+	} else {
+		return false
+	}
+}
+
+
 func Rules(rule_url string) []*Rule {
 	u, _ := url.Parse(rule_url)
 	q := u.Query()

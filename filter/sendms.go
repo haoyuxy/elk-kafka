@@ -76,3 +76,7 @@ func SendMail(emailurl, user, msg string) {
 func Callback(callurl string) {
 	log.Printf(callurl)
 }
+
+func AlarmLog(status bool,channel,msg string) {
+	log.Printf("log")
+}
