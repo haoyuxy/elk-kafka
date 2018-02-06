@@ -99,7 +99,10 @@ func (r *Rule) CheckLastTime(last, now int64) bool {
 }
 
 
-func CheckLastmsg(m map[string]int64,msg string,now int64) bool {
+func CheckLastmsg(m map[string]int64,msg string, now, nextalarmtime int64) bool {
+	if nextalarmtime != 0 {
+		return true
+	}
 	var t int64
 	t = m[msg]
 	if t == 0 || t + 30 * 60 <  now  {

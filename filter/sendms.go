@@ -22,13 +22,11 @@ func Users(user_url string) []*User {
 	res, err := http.Get(u.String())
 	if err != nil {
 		log.Fatal(err)
-		panic(err)
 	}
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Fatal(err)
-		panic(err)
 	}
 
 	var r []*User
@@ -42,13 +40,12 @@ func Sendwechat(chat, user, msg string) {
 	data["tos"] = []string{user}
 	res, err := http.PostForm(chat, data)
 	if err != nil {
-
-		log.Fatal(err)
+		log.Println(err)
 	}
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	log.Printf(string(result))
 
@@ -62,12 +59,12 @@ func SendMail(emailurl, user, msg string) {
 	data["tos"] = []string{user}
 	res, err := http.PostForm(emailurl, data)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	log.Printf(string(result))
 
