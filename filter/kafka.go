@@ -20,6 +20,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	//ruleslice := make([]*Rule, 0, 2000)       //规则队列
 	lastmap := make(map[string]int64)
 	//Ruleslice := Rules()
+	Mslogurl := ApiUrl + "sendmslog/"
 	Ruleslice := Rules(ApiUrl + "elk/")
 	//fmt.Println(Ruleslice)
 	//for _, _ := range Ruleslice { //初始化各种队列
@@ -125,10 +126,10 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 													//emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source + "\n" + log.Beat.Name //告警信息
 													semsg := emsg.String()
 													if u2.Email != "" && cfg.Mailurl != "" {
-														SendMail(cfg.Mailurl, u2.Email, semsg) //发送邮件
+														SendMail(cfg.Mailurl, u2.Email, semsg, u, Mslogurl) //发送邮件
 													}
 													if u2.Wechat != "" && cfg.Wechaturl != "" {
-														Sendwechat(cfg.Wechaturl, u2.Wechat, semsg) //发送微信
+														Sendwechat(cfg.Wechaturl, u2.Wechat, semsg, u, Mslogurl) //发送微信
 													}
 													Callback(v.Callback) //回调函数
 												}
