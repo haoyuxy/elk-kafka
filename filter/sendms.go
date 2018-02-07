@@ -46,6 +46,9 @@ func Sendwechat(chat, user, msg string) {
 	res.Body.Close()
 	if err != nil {
 		log.Println(err)
+		log.Printf("send wechat to  %s error.\n %s",user,msg )
+	}else{
+		log.Printf("send wechat to  %s success.\n %s",user,msg )
 	}
 	log.Printf(string(result))
 
@@ -65,6 +68,9 @@ func SendMail(emailurl, user, msg string) {
 	res.Body.Close()
 	if err != nil {
 		log.Println(err)
+		log.Printf("send email to  %s error.\n %s",user,msg )
+	}else{
+		log.Printf("send email to  %s success.\n %s",user,msg )
 	}
 	log.Printf(string(result))
 

@@ -2,7 +2,7 @@ package filter
 
 import (
 	"bytes"
-	"fmt"
+//	"fmt"
 	cluster "github.com/bsm/sarama-cluster"
 	"log"
 	"os"
@@ -21,7 +21,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	lastmap := make(map[string]int64)
 	//Ruleslice := Rules()
 	Ruleslice := Rules(ApiUrl + "elk/")
-	fmt.Println(Ruleslice)
+	//fmt.Println(Ruleslice)
 	//for _, _ := range Ruleslice { //初始化各种队列
 	for i:=0 ; i < len(Ruleslice); i++ {
 		expiredtime = append(expiredtime, make([]int64, 0, 2000))
@@ -79,7 +79,7 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 				//fmt.Println(string(msg.Value))
 				log := JsontoStr(msg.Value)
 				go func(log *Log) { //用每条规则检查日志
-					fmt.Println(log.Source)
+					//fmt.Println(log.Source)
 					for k, v := range Ruleslice {
 						if v.Reg(log) { //关键字检查
 							tags := map[string]string{"rule": v.Rulename,"logfile":log.Source,"ip":log.Beat.Name}
