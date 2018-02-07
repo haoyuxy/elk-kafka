@@ -22,9 +22,11 @@ type Cfg struct {
 	Mailurl   string
 	Wechaturl string
 	Phone     string
+	Influxdburl string
 }
 
 type Rule struct {
+	Rulename	  string
 	FilePattern   string
 	LogPattern    string
 	Expired       int64
@@ -186,7 +188,11 @@ func (conf *Cfg) readconf(file string) error {
 		return err
 	}
 	
-
+	conf.Influxdburl, err = c.GetString("default", "influxdb")
+	if err != nil {
+		return err
+	}
+	
 	conf.Apiurl, err = c.GetString("default", "apiurl")
 	return err
 }

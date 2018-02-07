@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 func KafkaOut(MaxCount int, cfg *Cfg) {
@@ -16,17 +17,28 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	ApiUrl := cfg.Apiurl                    //获取规则和用户的url
 	expiredtime := make([][]int64, 0, 2000) //存储匹配到的指标队列
 	lastalarmtime := make([]int64, 0, 1)    //每一条规则的上次告警时间
-	rulemap := make([]*Rule, 0, 2000)       //规则队列
+	//ruleslice := make([]*Rule, 0, 2000)       //规则队列
 	lastmap := make(map[string]int64)
 	//Ruleslice := Rules()
 	Ruleslice := Rules(ApiUrl + "elk/")
 	fmt.Println(Ruleslice)
-	for _, r := range Ruleslice { //初始化各种队列
+	//for _, _ := range Ruleslice { //初始化各种队列
+	for i:=0 ; i < len(Ruleslice); i++ {
 		expiredtime = append(expiredtime, make([]int64, 0, 2000))
 		lastalarmtime = append(lastalarmtime, 0)
-		rulemap = append(rulemap, r)
+		//ruleslice = append(ruleslice, r)
 
 	}
+	
+	influxconfig := client.UDPConfig{Addr: cfg.Influxdburl}
+	ic, err := client.NewUDPClient(influxconfig)
+	if err != nil {
+		panic(err.Error())
+	}
+	
+	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
+		Precision: "s",
+	})
 
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
@@ -68,8 +80,13 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 				log := JsontoStr(msg.Value)
 				go func(log *Log) { //用每条规则检查日志
 					fmt.Println(log.Source)
-					for k, v := range rulemap {
+					for k, v := range Ruleslice {
 						if v.Reg(log) { //关键字检查
+							tags := map[string]string{"rule": v.Rulename,"logfile":log.Source,"ip":log.Beat.Name}
+							fields := map[string]interface{}{"value":1,}
+							pt, _ := client.NewPoint("elkmonitor", tags, fields, time.Now())
+							bp.AddPoint(pt)
+							ic.Write(bp)
 							if v.CheckTime(time.Now().Hour()) { //检查是否在告警时间段
 								nowtime := time.Now().Unix()
 								expiredtime[k] = append(expiredtime[k], nowtime+v.Expired)
@@ -90,6 +107,9 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 													currentTime := time.Now().Format("2006-01-02 15:04:05")
 													var emsg bytes.Buffer
 													emsg.WriteString(currentTime)
+													emsg.WriteString("\n")
+													emsg.WriteString("规则名称: ")
+													emsg.WriteString(v.Rulename)
 													emsg.WriteString("\n")
 													emsg.WriteString("告警信息: ")
 													emsg.WriteString(v.Msg)
