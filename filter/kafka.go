@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+	"strconv"
 	"github.com/influxdata/influxdb/client/v2"
 )
 
@@ -123,6 +124,9 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 													emsg.WriteString("\n")
 													emsg.WriteString("日志路径: ")
 													emsg.WriteString(log.Source)
+													emsg.WriteString("\n")
+													emsg.WriteString("出现次数: ")
+													emsg.WriteString(strconv.Itoa(ncount))
 													//emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source + "\n" + log.Beat.Name //告警信息
 													semsg := emsg.String()
 													if u2.Email != "" && cfg.Mailurl != "" {
