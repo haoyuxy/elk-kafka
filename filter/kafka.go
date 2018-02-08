@@ -84,9 +84,9 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 					//fmt.Println(log.Source)
 					for k, v := range Ruleslice {
 						if v.Reg(log) { //关键字检查
-							tags := map[string]string{"rule": v.Rulename,"logfile":log.Source,"ip":log.Beat.Name}
+							tags := map[string]string{"logfile":log.Source,"ip":log.Beat.Name}
 							fields := map[string]interface{}{"value":1,}
-							pt, _ := client.NewPoint("elkmonitor", tags, fields, time.Now())
+							pt, _ := client.NewPoint(v.Rulename, tags, fields, time.Now())
 							bp.AddPoint(pt)
 							ic.Write(bp)
 							if v.CheckTime(time.Now().Hour()) { //检查是否在告警时间段
@@ -135,7 +135,9 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 													if u2.Wechat != "" && cfg.Wechaturl != "" {
 														Sendwechat(cfg.Wechaturl, u2.Wechat, semsg, u, Mslogurl) //发送微信
 													}
-													Callback(v.Callback) //回调函数
+													if v.Callback != "" {
+														Callback(v.Callback) //回调函数
+													}
 												}
 
 											}
