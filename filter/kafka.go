@@ -128,12 +128,17 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 													emsg.WriteString("出现次数: ")
 													emsg.WriteString(strconv.Itoa(ncount))
 													//emsg := v.Msg + "\n" + v.LogPattern + "\n" + log.Source + "\n" + log.Beat.Name //告警信息
-													semsg := emsg.String()
+													
 													if u2.Email != "" && cfg.Mailurl != "" {
-														SendMail(cfg.Mailurl, u2.Email, semsg, u, Mslogurl) //发送邮件
+														emsg.WriteString("\n")
+														emsg.WriteString("日志信息: ")
+														emsg.WriteString(log.Message)
+														memsg := emsg.String()
+														SendMail(cfg.Mailurl, u2.Email, memsg, u, Mslogurl) //发送邮件
 													}
 													if u2.Wechat != "" && cfg.Wechaturl != "" {
-														Sendwechat(cfg.Wechaturl, u2.Wechat, semsg, u, Mslogurl) //发送微信
+														cemsg := emsg.String()
+														Sendwechat(cfg.Wechaturl, u2.Wechat, cemsg, u, Mslogurl) //发送微信
 													}
 													if v.Callback != "" {
 														Callback(v.Callback) //回调函数
