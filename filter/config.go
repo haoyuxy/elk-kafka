@@ -35,6 +35,7 @@ type Rule struct {
 	StartTime     int
 	EndTime       int
 	User          string
+	Usergroup		  string
 	Rulel         string
 	Callback      string
 	Nextalarmtime int64

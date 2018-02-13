@@ -2,7 +2,7 @@ package filter
 
 import (
 	"bytes"
-//	"fmt"
+	"fmt"
 	cluster "github.com/bsm/sarama-cluster"
 	"log"
 	"os"
@@ -101,8 +101,14 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 										lastkey := log.Beat.Name + v.LogPattern + log.Source
 										lastmap[lastkey] = nowtime
 										users := v.User //获取报警用户
-										us := strings.Split(users, ",")
-										userslice := Users(ApiUrl + "users")
+										groups := v.Usergroup
+										gs := strings.Split(groups, ",")
+										us := strings.Split(users, ",")  //规则里的用户
+										userurl := ApiUrl + "users"
+										gus := GrouptoUser(gs,userurl)
+										us = append(us, gus...)
+										us = RemoveDuplicatesAndEmpty(us)
+										userslice := Users(userurl)
 										for _, u := range us {
 											for _, u2 := range userslice {
 												if u2.Username == u {

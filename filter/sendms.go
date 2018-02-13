@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"encoding/json"
+	"sort"
 )
 
 type User struct {
@@ -32,6 +33,47 @@ func Users(user_url string) []*User {
 	var r []*User
 	json.Unmarshal(result, &r)
 	return r
+}
+
+func GrouptoUser(groups []string,user_url string) []string {
+	var rs []*User
+	for _, g := range groups {
+		user_url = user_url + "?groupname=" + g
+		u, _ := url.Parse(user_url)
+		q := u.Query()
+		u.RawQuery = q.Encode()
+		res, err := http.Get(u.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+		result, err := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var r []*User
+		json.Unmarshal(result, &r)
+		rs = append(rs, r...)
+	}
+	    us := make([]string, 0, 20)
+        for _, u := range rs {
+                us = append(us, u.Username)
+        }
+        return us
+}
+
+
+func RemoveDuplicatesAndEmpty(a []string) (ret []string) {
+	sort.Strings(a)
+	a_len := len(a)
+	for i := 0; i < a_len; i++ {
+		if (i > 0 && a[i-1] == a[i]) || len(a[i]) == 0 {
+			continue
+		}
+		ret = append(ret, a[i])
+	}
+	return
 }
 
 func Sendwechat(chat, user, msg, zuser, mslogrul string) {
