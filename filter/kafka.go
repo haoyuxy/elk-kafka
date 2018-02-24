@@ -2,7 +2,7 @@ package filter
 
 import (
 	"bytes"
-	"fmt"
+//	"fmt"
 	cluster "github.com/bsm/sarama-cluster"
 	"log"
 	"os"
@@ -84,11 +84,13 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 					//fmt.Println(log.Source)
 					for k, v := range Ruleslice {
 						if v.Reg(log) { //关键字检查
+						 go func() {
 							tags := map[string]string{"logfile":log.Source,"ip":log.Beat.Name}
 							fields := map[string]interface{}{"value":1,}
 							pt, _ := client.NewPoint(v.Rulename, tags, fields, time.Now())
 							bp.AddPoint(pt)
 							ic.Write(bp)
+						 }()
 							if v.CheckTime(time.Now().Hour()) { //检查是否在告警时间段
 								nowtime := time.Now().Unix()
 								expiredtime[k] = append(expiredtime[k], nowtime+v.Expired)

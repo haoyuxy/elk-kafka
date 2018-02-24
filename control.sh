@@ -1,19 +1,19 @@
 #!/bin/sh
 #
-# /etc/init.d/chat
+# /etc/init.d/elk-kafka
 #
 #
 # chkconfig:   - 85 15
 #
 
 ### BEGIN INIT INFO
-# Provides:          chat
+# Provides:          elk-kafka
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start chat at boot time.
-# Description:       Control chat.
+# Short-Description: Start elk-kafka at boot time.
+# Description:       Control elk-kafka.
 ### END INIT INFO
 
 # Source function library.
