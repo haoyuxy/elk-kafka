@@ -1,19 +1,19 @@
 package filter
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"encoding/json"
 	"sort"
 )
 
 type User struct {
-	Username   string
-	Phone  string
-	Wechat string
-	Email  string
+	Username string
+	Phone    string
+	Wechat   string
+	Email    string
 }
 
 func Users(user_url string) []*User {
@@ -35,7 +35,7 @@ func Users(user_url string) []*User {
 	return r
 }
 
-func GrouptoUser(groups []string,user_url string) []string {
+func GrouptoUser(groups []string, user_url string) []string {
 	var rs []*User
 	for _, g := range groups {
 		user_url = user_url + "?groupname=" + g
@@ -56,13 +56,12 @@ func GrouptoUser(groups []string,user_url string) []string {
 		json.Unmarshal(result, &r)
 		rs = append(rs, r...)
 	}
-	    us := make([]string, 0, 20)
-        for _, u := range rs {
-                us = append(us, u.Username)
-        }
-        return us
+	us := make([]string, 0, 20)
+	for _, u := range rs {
+		us = append(us, u.Username)
+	}
+	return us
 }
-
 
 func RemoveDuplicatesAndEmpty(a []string) (ret []string) {
 	sort.Strings(a)
@@ -87,12 +86,12 @@ func Sendwechat(chat, user, msg, zuser, mslogrul string) {
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		Sendmslog("0",mslogrul,"wechat",user,msg)
+		Sendmslog("0", mslogrul, "wechat", user, msg)
 		log.Println(err)
-		log.Printf("send wechat to  %s error.\n%s",zuser,msg )
-	}else{
-		log.Printf("send wechat to  %s success.\n%s",zuser,msg )
-		Sendmslog("1",mslogrul,"wechat",zuser,msg)
+		log.Printf("send wechat to  %s error.\n%s", zuser, msg)
+	} else {
+		log.Printf("send wechat to  %s success.\n%s", zuser, msg)
+		Sendmslog("1", mslogrul, "wechat", zuser, msg)
 	}
 	log.Printf(string(result))
 
@@ -111,19 +110,18 @@ func SendMail(emailurl, user, msg, zuser, mslogrul string) {
 	result, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		Sendmslog("0",mslogrul,"Email",zuser,msg)
+		Sendmslog("0", mslogrul, "Email", zuser, msg)
 		log.Println(err)
-		log.Printf("send email to  %s error.\n%s",zuser,msg )
-	}else{
-		Sendmslog("1",mslogrul,"Email",user,msg)
-		log.Printf("send email to  %s success.\n%s",zuser,msg )
+		log.Printf("send email to  %s error.\n%s", zuser, msg)
+	} else {
+		Sendmslog("1", mslogrul, "Email", user, msg)
+		log.Printf("send email to  %s success.\n%s", zuser, msg)
 	}
 	log.Println(string(result))
 
 }
 
-
-func Sendmslog(status ,logurl, channel, user, msg string) {
+func Sendmslog(status, logurl, channel, user, msg string) {
 	data := make(url.Values)
 	data["channel"] = []string{channel}
 	data["user"] = []string{user}
@@ -145,5 +143,3 @@ func Sendmslog(status ,logurl, channel, user, msg string) {
 func Callback(callurl string) {
 	log.Println(callurl)
 }
-
-

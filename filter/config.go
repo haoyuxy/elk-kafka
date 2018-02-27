@@ -15,18 +15,18 @@ import (
 )
 
 type Cfg struct {
-	Kafka     string
-	Group     string
-	Topic     string
-	Apiurl    string
-	Mailurl   string
-	Wechaturl string
-	Phone     string
+	Kafka       string
+	Group       string
+	Topic       string
+	Apiurl      string
+	Mailurl     string
+	Wechaturl   string
+	Phone       string
 	Influxdburl string
 }
 
 type Rule struct {
-	Rulename	  string
+	Rulename      string
 	FilePattern   string
 	LogPattern    string
 	Expired       int64
@@ -35,14 +35,12 @@ type Rule struct {
 	StartTime     int
 	EndTime       int
 	User          string
-	Usergroup		  string
+	Usergroup     string
 	Rulel         string
 	Callback      string
 	Nextalarmtime int64
 	Msg           string
 }
-
-
 
 func (r *Rule) Reg(log *Log) bool {
 	b, _ := regexp.MatchString(r.FilePattern, log.Source)
@@ -101,20 +99,18 @@ func (r *Rule) CheckLastTime(last, now int64) bool {
 	}
 }
 
-
-func CheckLastmsg(m map[string]int64,msg string, now, nextalarmtime int64) bool {
+func CheckLastmsg(m map[string]int64, msg string, now, nextalarmtime int64) bool {
 	if nextalarmtime != 0 {
 		return true
 	}
 	var t int64
 	t = m[msg]
-	if t == 0 || t + 30 * 60 <  now  {
+	if t == 0 || t+30*60 < now {
 		return true
 	} else {
 		return false
 	}
 }
-
 
 func Rules(rule_url string) []*Rule {
 	u, _ := url.Parse(rule_url)
@@ -178,22 +174,22 @@ func (conf *Cfg) readconf(file string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	conf.Mailurl, err = c.GetString("default", "mail")
 	if err != nil {
 		return err
 	}
-	
+
 	conf.Wechaturl, err = c.GetString("default", "wechat")
 	if err != nil {
 		return err
 	}
-	
+
 	conf.Influxdburl, err = c.GetString("default", "influxdb")
 	if err != nil {
-		return err
+		conf.Influxdburl = "null"
 	}
-	
+
 	conf.Apiurl, err = c.GetString("default", "apiurl")
 	return err
 }

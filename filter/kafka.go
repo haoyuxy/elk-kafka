@@ -2,15 +2,15 @@ package filter
 
 import (
 	"bytes"
-//	"fmt"
+	//	"fmt"
 	cluster "github.com/bsm/sarama-cluster"
+	"github.com/influxdata/influxdb/client/v2"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
-	"github.com/influxdata/influxdb/client/v2"
 )
 
 func KafkaOut(MaxCount int, cfg *Cfg) {
@@ -25,22 +25,18 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 	Ruleslice := Rules(ApiUrl + "elk/")
 	//fmt.Println(Ruleslice)
 	//for _, _ := range Ruleslice { //初始化各种队列
-	for i:=0 ; i < len(Ruleslice); i++ {
+	for i := 0; i < len(Ruleslice); i++ {
 		expiredtime = append(expiredtime, make([]int64, 0, 2000))
 		lastalarmtime = append(lastalarmtime, 0)
 		//ruleslice = append(ruleslice, r)
 
 	}
-	
+
 	influxconfig := client.UDPConfig{Addr: cfg.Influxdburl}
 	ic, err := client.NewUDPClient(influxconfig)
 	if err != nil {
-		panic(err.Error())
+		log.Println(err)
 	}
-	
-	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
-		Precision: "s",
-	})
 
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
@@ -84,13 +80,16 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 					//fmt.Println(log.Source)
 					for k, v := range Ruleslice {
 						if v.Reg(log) { //关键字检查
-						 go func(log *Log,v *Rule) {
-							tags := map[string]string{"logfile":log.Source,"ip":log.Beat.Name}
-							fields := map[string]interface{}{"value":1,}
-							pt, _ := client.NewPoint(v.Rulename, tags, fields, time.Now())
-							bp.AddPoint(pt)
-							ic.Write(bp)
-						 }(log,v)
+							if cfg.Influxdburl != "null" {
+								bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
+									Precision: "s",
+								})
+								tags := map[string]string{"logfile": log.Source, "ip": log.Beat.Name}
+								fields := map[string]interface{}{"value": 1}
+								pt, _ := client.NewPoint(v.Rulename, tags, fields, time.Now())
+								bp.AddPoint(pt)
+								ic.Write(bp)
+							}
 							if v.CheckTime(time.Now().Hour()) { //检查是否在告警时间段
 								nowtime := time.Now().Unix()
 								expiredtime[k] = append(expiredtime[k], nowtime+v.Expired)
@@ -105,9 +104,9 @@ func KafkaOut(MaxCount int, cfg *Cfg) {
 										users := v.User //获取报警用户
 										groups := v.Usergroup
 										gs := strings.Split(groups, ",")
-										us := strings.Split(users, ",")  //规则里的用户
+										us := strings.Split(users, ",") //规则里的用户
 										userurl := ApiUrl + "users"
-										gus := GrouptoUser(gs,userurl)
+										gus := GrouptoUser(gs, userurl)
 										us = append(us, gus...)
 										us = RemoveDuplicatesAndEmpty(us)
 										userslice := Users(userurl)
